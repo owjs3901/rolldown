@@ -2922,6 +2922,10 @@ export interface BindingSourceMapOptions {
 
 export interface BindingTransformHookExtraArgs {
   moduleType: string
+  /** The module id without its import attributes. Omitted when equal to the id. */
+  rawId?: string
+  /** Omitted when empty. */
+  attributes?: Record<string, string>
 }
 
 export interface BindingTreeshake {

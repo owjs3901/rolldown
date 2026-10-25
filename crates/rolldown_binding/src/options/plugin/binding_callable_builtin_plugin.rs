@@ -176,10 +176,18 @@ impl BindingCallableBuiltinPlugin {
     crate::start_async_runtime();
     AsyncBlockBuilder::with(async move {
       let code_arc = ArcStr::from(code.as_str());
+      let (raw_id, attributes) =
+        split_module_id(Some(&id)).unwrap_or_else(|| (id.clone(), ImportAttributes::default()));
       plugin
         .call_transform(
           context,
-          &HookTransformArgs { id: &id, code: &code_arc, module_type: &module_type },
+          &HookTransformArgs {
+            id: &id,
+            raw_id: &raw_id,
+            attributes: &attributes,
+            code: &code_arc,
+            module_type: &module_type,
+          },
         )
         .await
         .map_err(AnyHowMaybeNapiError::into_napi_error)
