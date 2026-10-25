@@ -7,7 +7,7 @@ use napi::{
 };
 use napi_derive::napi;
 use rolldown::ModuleType;
-use rolldown_common::WatcherChangeKind;
+use rolldown_common::{ImportAttributes, WatcherChangeKind};
 use rolldown_plugin::{
   __inner::SharedPluginable, CustomField, HookLoadArgs, HookLoadOutput, HookResolveIdArgs,
   HookResolveIdOutput, HookTransformArgs, LoadPluginContext, PluginIdx, PluginOrder,
@@ -96,6 +96,7 @@ impl BindingCallableBuiltinPlugin {
     let context = Arc::clone(&self.context);
     crate::start_async_runtime();
     AsyncBlockBuilder::with(async move {
+      let importer_parts = split_module_id(importer.as_deref());
       plugin
         .call_resolve_id(
           &context.inner,
@@ -105,6 +106,13 @@ impl BindingCallableBuiltinPlugin {
             is_entry: options.as_ref().is_some_and(|options| options.is_entry.unwrap_or_default()),
             kind,
             custom: options.map(Into::into).unwrap_or_default(),
+            attributes: &ImportAttributes::default(),
+            importer_raw_id: importer_parts
+              .as_ref()
+              .map_or(importer.as_deref(), |(raw_id, _)| Some(raw_id.as_str())),
+            importer_attributes: importer_parts
+              .as_ref()
+              .map_or(&ImportAttributes::default(), |(_, attributes)| attributes),
           },
         )
         .await
@@ -301,4 +309,10 @@ impl AnyHowMaybeNapiError for anyhow::Error {
       Err(original_error) => original_error.into(),
     }
   }
+}
+
+/// Splits a module id received from JS into its raw id and import attributes.
+fn split_module_id(id: Option<&str>) -> Option<(String, ImportAttributes)> {
+  ImportAttributes::parse_module_id(id?)
+    .map(|(raw_id, attributes)| (raw_id.to_string(), attributes))
 }

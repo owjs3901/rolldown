@@ -61,11 +61,11 @@ pub struct BindingPluginOptions {
   pub resolve_id_filter: Option<BindingHookFilter>,
 
   #[napi(
-    ts_type = "(ctx: BindingPluginContext, specifier: string, importer: Nullable<string>) => MaybePromise<VoidNullable<BindingHookResolveIdOutput>>"
+    ts_type = "(ctx: BindingPluginContext, specifier: string, importer: Nullable<string>, options: BindingHookResolveIdExtraArgs) => MaybePromise<VoidNullable<BindingHookResolveIdOutput>>"
   )]
   pub resolve_dynamic_import: Option<
     MaybeAsyncJsCallback<
-      FnArgs<(BindingPluginContext, String, Option<String>)>,
+      FnArgs<(BindingPluginContext, String, Option<String>, BindingHookResolveIdExtraArgs)>,
       Option<BindingHookResolveIdOutput>,
     >,
   >,
