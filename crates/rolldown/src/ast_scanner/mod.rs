@@ -535,6 +535,12 @@ impl<'me, 'ast: 'me> AstScanner<'me, 'ast> {
     id
   }
 
+  /// Ignored `import()` options are only worth a warning when they would be part of the module id.
+  fn warns_invalid_import_attribute(&self) -> bool {
+    self.immutable_ctx.options.experimental.is_import_attributes_enabled()
+      && self.immutable_ctx.options.checks.contains(EventKindSwitcher::InvalidImportAttribute)
+  }
+
   fn add_with_clause(&mut self, record_idx: ImportRecordIdx, with_clause: &ast::WithClause) {
     if matches!(with_clause.keyword, ast::WithClauseKeyword::Assert)
       && self.immutable_ctx.options.checks.contains(EventKindSwitcher::InvalidImportAttribute)
